@@ -1,65 +1,139 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { FlightSearch } from '@/components/FlightSearch';
+import { useFlightSearch } from '@/hooks/useFlightSearch';
+import { SearchParams } from '@/types/flight';
+import { Plane } from 'lucide-react';
 
 export default function Home() {
+  const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
+  const { data: flightData, isLoading, error } = useFlightSearch(searchParams);
+
+  const handleSearch = (params: SearchParams) => {
+    setSearchParams(params);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Plane className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">
+                Flight Search Engine
+              </h1>
+              <p className="text-sm text-gray-500">
+                Find and compare the best flight deals
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search Section */}
+        <div className="mb-8">
+          <FlightSearch onSearch={handleSearch} isLoading={isLoading} />
+        </div>
+
+        {/* Results Section */}
+        {isLoading && (
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+              <p className="text-lg font-medium text-gray-900">
+                Searching for flights...
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                This may take a few seconds
+              </p>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Error Loading Flights
+              </h3>
+              <p className="text-gray-600">
+                {error instanceof Error ? error.message : 'An error occurred while searching for flights'}
+              </p>
+              <button
+                onClick={() => setSearchParams(null)}
+                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
+
+        {flightData && !isLoading && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Search Results
+            </h2>
+            <div className="space-y-4">
+              <p className="text-lg text-gray-700">
+                Found <span className="font-semibold">{flightData.data.length}</span> flights
+              </p>
+              {/* Flight results will be displayed here once we build the FlightCard component */}
+              <div className="text-gray-500 text-sm">
+                Flight cards component coming in Phase 4...
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!searchParams && !isLoading && (
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plane className="w-10 h-10 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Ready to find your next flight?
+              </h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Enter your travel details above to search for the best flight deals.
+                Compare prices, filter by preferences, and book with confidence.
+              </p>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-16 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <p className="text-center text-gray-500 text-sm">
+            Built with Next.js, TypeScript, and Amadeus API
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }

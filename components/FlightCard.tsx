@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, memo } from 'react';
-import { FlightOffer, Itinerary, Segment } from '@/types/flight';
+import { FlightOffer, Itinerary, FlightSegment } from '@/types/flight';
 import { Plane, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
@@ -43,7 +43,7 @@ function FlightCardComponent({ flight, dictionaries }: FlightCardProps) {
     return dictionaries?.carriers?.[carrierCode] || carrierCode;
   };
 
-  const renderSegment = (segment: Segment, index: number) => {
+  const renderSegment = (segment: FlightSegment, index: number) => {
     const airlineName = getAirlineName(segment.carrierCode);
 
     return (

@@ -21,6 +21,7 @@ interface FilterPanelProps {
   ) => void;
   onReset: () => void;
   activeFilterCount: number;
+  variant?: 'desktop' | 'mobile';
 }
 
 function FilterPanelComponent({
@@ -31,6 +32,7 @@ function FilterPanelComponent({
   onFilterChange,
   onReset,
   activeFilterCount,
+  variant = 'desktop',
 }: FilterPanelProps) {
   const handleStopToggle = (stop: number) => {
     const newStops = filters.stops.includes(stop)
@@ -61,7 +63,10 @@ function FilterPanelComponent({
     .slice(0, 10);
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 sticky top-4">
+    <div className={clsx(
+      'bg-white rounded-xl shadow-md p-6',
+      variant === 'desktop' && 'sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto'
+    )}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Filter className="w-5 h-5 text-blue-600" />
@@ -157,7 +162,7 @@ function FilterPanelComponent({
       {/* Airlines Filter */}
       <div>
         <h4 className="font-medium text-gray-900 mb-3">Airlines</h4>
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 -mr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {topAirlines.map(([code, count]) => (
             <label
               key={code}

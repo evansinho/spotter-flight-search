@@ -106,6 +106,7 @@ export function MobileFilterDrawer({
             onFilterChange={onFilterChange}
             onReset={onReset}
             activeFilterCount={activeFilterCount}
+            variant="mobile"
           />
         </div>
 

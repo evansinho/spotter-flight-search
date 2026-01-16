@@ -11,7 +11,7 @@ interface TokenResponse {
   state: string;
 }
 
-class AmadeusClient {
+class AmadeusServerClient {
   private axiosInstance: AxiosInstance;
   private accessToken: string | null = null;
   private tokenExpiresAt: number | null = null;
@@ -20,12 +20,12 @@ class AmadeusClient {
   private baseURL: string;
 
   constructor() {
-    this.apiKey = process.env.NEXT_PUBLIC_AMADEUS_API_KEY || '';
-    this.apiSecret = process.env.NEXT_PUBLIC_AMADEUS_API_SECRET || '';
-    this.baseURL = process.env.NEXT_PUBLIC_AMADEUS_API_URL || 'https://test.api.amadeus.com';
+    this.apiKey = process.env.AMADEUS_API_KEY || '';
+    this.apiSecret = process.env.AMADEUS_API_SECRET || '';
+    this.baseURL = process.env.AMADEUS_API_URL || 'https://test.api.amadeus.com';
 
     if (!this.apiKey || !this.apiSecret) {
-      console.error('Amadeus API credentials not found in environment variables');
+      throw new Error('Amadeus API credentials not found in environment variables');
     }
 
     this.axiosInstance = axios.create({
@@ -58,7 +58,7 @@ class AmadeusClient {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       async (error) => {
-        // If token expired, refresh and retry
+        // If token expired, refresh and retry once
         if (error.response?.status === 401 && !error.config._retry) {
           error.config._retry = true;
           this.accessToken = null;
@@ -94,8 +94,7 @@ class AmadeusClient {
       this.tokenExpiresAt = Date.now() + (response.data.expires_in - 300) * 1000;
 
       return this.accessToken;
-    } catch (error) {
-      console.error('Error getting Amadeus access token:', error);
+    } catch (error: any) {
       throw new Error('Failed to authenticate with Amadeus API');
     }
   }
@@ -111,21 +110,23 @@ class AmadeusClient {
       const response = await this.axiosInstance.get<T>(url, { params });
       return response.data;
     } catch (error: any) {
-      console.error(`Error making GET request to ${url}:`, error.response?.data || error.message);
-      throw error;
-    }
-  }
+      const status = error.response?.status;
+      const errorData = error.response?.data;
 
-  public async post<T>(url: string, data?: any): Promise<T> {
-    try {
-      const response = await this.axiosInstance.post<T>(url, data);
-      return response.data;
-    } catch (error: any) {
-      console.error(`Error making POST request to ${url}:`, error.response?.data || error.message);
-      throw error;
+      // Provide user-friendly error messages
+      if (status === 401) {
+        throw new Error('Authentication failed. Please check your Amadeus API credentials.');
+      } else if (status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      } else if (status === 400) {
+        const errorMsg = errorData?.errors?.[0]?.detail || 'Invalid request parameters';
+        throw new Error(errorMsg);
+      } else {
+        throw new Error('Failed to fetch data from Amadeus API. Please try again.');
+      }
     }
   }
 }
 
 // Export singleton instance
-export const amadeusClient = new AmadeusClient();
+export const amadeusServerClient = new AmadeusServerClient();

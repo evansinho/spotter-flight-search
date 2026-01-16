@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { searchAirports } from '@/lib/api/flights';
 import { Airport } from '@/types/flight';
 
 /**
@@ -9,7 +8,15 @@ import { Airport } from '@/types/flight';
 export function useAirportSearch(keyword: string) {
   return useQuery<Airport[]>({
     queryKey: ['airports', keyword],
-    queryFn: () => searchAirports(keyword),
+    queryFn: async () => {
+      const response = await fetch(`/api/airports?keyword=${encodeURIComponent(keyword)}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to search airports');
+      }
+      const data = await response.json();
+      return data.data;
+    },
     enabled: keyword.length >= 2, // Only search if at least 2 characters
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

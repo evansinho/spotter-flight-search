@@ -155,7 +155,7 @@ export function FlightSearch({ onSearch, isLoading = false }: FlightSearchProps)
               Departure
             </label>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
                 <Calendar className="w-5 h-5" />
               </div>
               <input
@@ -164,9 +164,14 @@ export function FlightSearch({ onSearch, isLoading = false }: FlightSearchProps)
                 onChange={(e) => setDepartureDate(e.target.value)}
                 min={today}
                 className={clsx(
-                  'w-full pl-11 pr-4 py-3 border rounded-lg',
+                  'w-full pl-11 pr-4 py-3 border rounded-lg cursor-pointer',
                   'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                   'transition-all duration-200',
+                  'text-gray-900 font-normal',
+                  '[&::-webkit-calendar-picker-indicator]:opacity-0',
+                  '[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0',
+                  '[&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full',
+                  '[&::-webkit-calendar-picker-indicator]:cursor-pointer',
                   errors.departureDate ? 'border-red-500' : 'border-gray-300'
                 )}
               />
@@ -182,7 +187,7 @@ export function FlightSearch({ onSearch, isLoading = false }: FlightSearchProps)
               Return
             </label>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
                 <Calendar className="w-5 h-5" />
               </div>
               <input
@@ -195,7 +200,14 @@ export function FlightSearch({ onSearch, isLoading = false }: FlightSearchProps)
                   'w-full pl-11 pr-4 py-3 border rounded-lg',
                   'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                   'transition-all duration-200',
-                  tripType === 'one-way' && 'bg-gray-50 cursor-not-allowed',
+                  'text-gray-900 font-normal',
+                  '[&::-webkit-calendar-picker-indicator]:opacity-0',
+                  '[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0',
+                  '[&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full',
+                  '[&::-webkit-calendar-picker-indicator]:cursor-pointer',
+                  tripType === 'one-way'
+                    ? 'bg-gray-50 cursor-not-allowed'
+                    : 'cursor-pointer',
                   errors.returnDate ? 'border-red-500' : 'border-gray-300'
                 )}
               />
@@ -210,18 +222,20 @@ export function FlightSearch({ onSearch, isLoading = false }: FlightSearchProps)
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Passengers
             </label>
-            <button
-              type="button"
-              onClick={() => setShowPassengers(!showPassengers)}
-              className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-left hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            >
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
                 <Users className="w-5 h-5" />
               </div>
-              <span className="text-gray-900">
-                {totalPassengers} {totalPassengers === 1 ? 'Passenger' : 'Passengers'}
-              </span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowPassengers(!showPassengers)}
+                className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-left hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
+                <span className="text-gray-900 font-normal">
+                  {totalPassengers} {totalPassengers === 1 ? 'Passenger' : 'Passengers'}
+                </span>
+              </button>
+            </div>
 
             {/* Passenger Dropdown */}
             {showPassengers && (
@@ -237,16 +251,16 @@ export function FlightSearch({ onSearch, isLoading = false }: FlightSearchProps)
                       <button
                         type="button"
                         onClick={() => setAdults(Math.max(1, adults - 1))}
-                        className="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        className="w-8 h-8 rounded-full border-2 border-gray-400 hover:bg-gray-100 transition-colors text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={adults <= 1}
                       >
                         -
                       </button>
-                      <span className="w-8 text-center font-medium">{adults}</span>
+                      <span className="w-8 text-center font-semibold text-gray-900">{adults}</span>
                       <button
                         type="button"
                         onClick={() => setAdults(Math.min(9, adults + 1))}
-                        className="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        className="w-8 h-8 rounded-full border-2 border-gray-400 hover:bg-gray-100 transition-colors text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={adults >= 9}
                       >
                         +
@@ -264,16 +278,16 @@ export function FlightSearch({ onSearch, isLoading = false }: FlightSearchProps)
                       <button
                         type="button"
                         onClick={() => setChildren(Math.max(0, children - 1))}
-                        className="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        className="w-8 h-8 rounded-full border-2 border-gray-400 hover:bg-gray-100 transition-colors text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={children <= 0}
                       >
                         -
                       </button>
-                      <span className="w-8 text-center font-medium">{children}</span>
+                      <span className="w-8 text-center font-semibold text-gray-900">{children}</span>
                       <button
                         type="button"
                         onClick={() => setChildren(Math.min(9, children + 1))}
-                        className="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        className="w-8 h-8 rounded-full border-2 border-gray-400 hover:bg-gray-100 transition-colors text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={children >= 9}
                       >
                         +

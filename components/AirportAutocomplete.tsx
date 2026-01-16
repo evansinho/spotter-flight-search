@@ -118,6 +118,7 @@ export function AirportAutocomplete({
             'w-full pl-11 pr-10 py-3 border rounded-lg',
             'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
             'transition-all duration-200',
+            'text-gray-900 font-normal placeholder:text-gray-400',
             error ? 'border-red-500' : 'border-gray-300'
           )}
           aria-label={label}

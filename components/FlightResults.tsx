@@ -1,0 +1,163 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { FlightOffersResponse, FlightOffer } from '@/types/flight';
+import { FlightCard } from './FlightCard';
+import { Loader2, AlertCircle } from 'lucide-react';
+import clsx from 'clsx';
+
+interface FlightResultsProps {
+  data: FlightOffersResponse | undefined;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+type SortOption = 'price-asc' | 'price-desc' | 'duration-asc' | 'duration-desc';
+
+export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
+  const [sortBy, setSortBy] = useState<SortOption>('price-asc');
+
+  const sortedFlights = useMemo(() => {
+    if (!data?.data) return [];
+
+    const flights = [...data.data];
+
+    switch (sortBy) {
+      case 'price-asc':
+        return flights.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
+      case 'price-desc':
+        return flights.sort((a, b) => parseFloat(b.price.total) - parseFloat(a.price.total));
+      case 'duration-asc':
+        return flights.sort((a, b) => {
+          const aDuration = a.itineraries.reduce((sum, it) => {
+            const hours = parseInt(it.duration.match(/(\d+)H/)?.[1] || '0');
+            const minutes = parseInt(it.duration.match(/(\d+)M/)?.[1] || '0');
+            return sum + hours * 60 + minutes;
+          }, 0);
+          const bDuration = b.itineraries.reduce((sum, it) => {
+            const hours = parseInt(it.duration.match(/(\d+)H/)?.[1] || '0');
+            const minutes = parseInt(it.duration.match(/(\d+)M/)?.[1] || '0');
+            return sum + hours * 60 + minutes;
+          }, 0);
+          return aDuration - bDuration;
+        });
+      case 'duration-desc':
+        return flights.sort((a, b) => {
+          const aDuration = a.itineraries.reduce((sum, it) => {
+            const hours = parseInt(it.duration.match(/(\d+)H/)?.[1] || '0');
+            const minutes = parseInt(it.duration.match(/(\d+)M/)?.[1] || '0');
+            return sum + hours * 60 + minutes;
+          }, 0);
+          const bDuration = b.itineraries.reduce((sum, it) => {
+            const hours = parseInt(it.duration.match(/(\d+)H/)?.[1] || '0');
+            const minutes = parseInt(it.duration.match(/(\d+)M/)?.[1] || '0');
+            return sum + hours * 60 + minutes;
+          }, 0);
+          return bDuration - aDuration;
+        });
+      default:
+        return flights;
+    }
+  }, [data?.data, sortBy]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto mt-8">
+        <div className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+          <p className="text-lg text-gray-600">Searching for flights...</p>
+          <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full max-w-4xl mx-auto mt-8">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-red-900 mb-1">
+                Search Error
+              </h3>
+              <p className="text-red-700">{error.message}</p>
+              <p className="text-sm text-red-600 mt-2">
+                Please try adjusting your search criteria and try again.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data?.data || data.data.length === 0) {
+    return (
+      <div className="w-full max-w-4xl mx-auto mt-8">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-12 text-center">
+          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            No flights found
+          </h3>
+          <p className="text-gray-600 max-w-md mx-auto">
+            We couldn't find any flights matching your search criteria. Try adjusting your dates or destinations.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-6xl mx-auto mt-8 px-4">
+      {/* Header with results count and sorting */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {data.data.length} flight{data.data.length !== 1 ? 's' : ''} found
+          </h2>
+          <p className="text-gray-600 mt-1">
+            Choose the best option for your trip
+          </p>
+        </div>
+
+        {/* Sort dropdown */}
+        <div className="flex items-center gap-3">
+          <label htmlFor="sort" className="text-sm font-medium text-gray-700">
+            Sort by:
+          </label>
+          <select
+            id="sort"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className={clsx(
+              'px-4 py-2 border border-gray-300 rounded-lg',
+              'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+              'text-gray-900 font-medium bg-white cursor-pointer',
+              'transition-all duration-200'
+            )}
+          >
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="duration-asc">Duration: Shortest First</option>
+            <option value="duration-desc">Duration: Longest First</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Flight cards */}
+      <div className="space-y-4">
+        {sortedFlights.map((flight, index) => (
+          <FlightCard
+            key={`${flight.id}-${index}`}
+            flight={flight}
+            dictionaries={data.dictionaries}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

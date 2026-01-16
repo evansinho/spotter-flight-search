@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { FlightOffersResponse, FlightOffer } from '@/types/flight';
 import { FlightCard } from './FlightCard';
+import { PriceGraph } from './PriceGraph';
 import { Loader2, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -146,6 +147,11 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
             <option value="duration-desc">Duration: Longest First</option>
           </select>
         </div>
+      </div>
+
+      {/* Price Graph */}
+      <div className="mb-6">
+        <PriceGraph flights={sortedFlights} currency={data.data[0]?.price.currency} />
       </div>
 
       {/* Flight cards */}

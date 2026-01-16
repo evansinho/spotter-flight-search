@@ -24,10 +24,6 @@ class AmadeusServerClient {
     this.apiSecret = process.env.AMADEUS_API_SECRET || '';
     this.baseURL = process.env.AMADEUS_API_URL || 'https://test.api.amadeus.com';
 
-    if (!this.apiKey || !this.apiSecret) {
-      throw new Error('Amadeus API credentials not found in environment variables');
-    }
-
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
       headers: {
@@ -73,6 +69,10 @@ class AmadeusServerClient {
   }
 
   private async getAccessToken(): Promise<string> {
+    if (!this.apiKey || !this.apiSecret) {
+      throw new Error('Amadeus API credentials not found in environment variables');
+    }
+
     try {
       const params = new URLSearchParams();
       params.append('grant_type', 'client_credentials');

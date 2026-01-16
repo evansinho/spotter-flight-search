@@ -74,7 +74,7 @@ export function FilterPanel({
         {activeFilterCount > 0 && (
           <button
             onClick={onReset}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 p-2 -m-2 min-h-[44px]"
           >
             <X className="w-4 h-4" />
             Reset
@@ -93,7 +93,7 @@ export function FilterPanel({
           ].map(({ value, label }) => (
             <label
               key={value}
-              className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+              className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 px-2 py-3 rounded-lg transition-colors min-h-[44px]"
             >
               <input
                 type="checkbox"
@@ -129,7 +129,7 @@ export function FilterPanel({
                 parseInt(e.target.value),
               ])
             }
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
         </div>
       </div>
@@ -148,7 +148,7 @@ export function FilterPanel({
             step={30}
             value={filters.maxDuration}
             onChange={(e) => onFilterChange('maxDuration', parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
         </div>
       </div>
@@ -160,7 +160,7 @@ export function FilterPanel({
           {topAirlines.map(([code, count]) => (
             <label
               key={code}
-              className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+              className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 px-2 py-3 rounded-lg transition-colors min-h-[44px]"
             >
               <input
                 type="checkbox"

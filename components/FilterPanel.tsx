@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { FlightFilters } from '@/lib/filters/flightFilters';
 import { Filter, X } from 'lucide-react';
 import clsx from 'clsx';
@@ -22,7 +23,7 @@ interface FilterPanelProps {
   activeFilterCount: number;
 }
 
-export function FilterPanel({
+function FilterPanelComponent({
   filters,
   defaultFilters,
   counts,
@@ -181,3 +182,6 @@ export function FilterPanel({
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders when parent re-renders
+export const FilterPanel = memo(FilterPanelComponent);

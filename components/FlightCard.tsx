@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { FlightOffer, Itinerary, Segment } from '@/types/flight';
 import { Plane, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
@@ -14,7 +14,7 @@ interface FlightCardProps {
   };
 }
 
-export function FlightCard({ flight, dictionaries }: FlightCardProps) {
+function FlightCardComponent({ flight, dictionaries }: FlightCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formatDuration = (duration: string): string => {
@@ -262,3 +262,6 @@ export function FlightCard({ flight, dictionaries }: FlightCardProps) {
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export const FlightCard = memo(FlightCardComponent);

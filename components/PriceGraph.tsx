@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { FlightOffer } from '@/types/flight';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp } from 'lucide-react';
@@ -18,7 +18,7 @@ interface PriceBin {
   color: string;
 }
 
-export function PriceGraph({ flights, currency = 'EUR' }: PriceGraphProps) {
+function PriceGraphComponent({ flights, currency = 'EUR' }: PriceGraphProps) {
   const priceData = useMemo(() => {
     if (!flights || flights.length === 0) return [];
 
@@ -129,3 +129,6 @@ export function PriceGraph({ flights, currency = 'EUR' }: PriceGraphProps) {
     </div>
   );
 }
+
+// Memoize component since Recharts is heavy and we don't want to re-render unnecessarily
+export const PriceGraph = memo(PriceGraphComponent);

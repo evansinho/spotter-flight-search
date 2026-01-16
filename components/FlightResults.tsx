@@ -1,14 +1,24 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { FlightOffersResponse, FlightOffer } from '@/types/flight';
+import dynamic from 'next/dynamic';
+import { FlightOffersResponse } from '@/types/flight';
 import { FlightCard } from './FlightCard';
-import { PriceGraph } from './PriceGraph';
 import { FilterPanel } from './FilterPanel';
 import { MobileFilterDrawer } from './MobileFilterDrawer';
 import { useFlightFilters } from '@/hooks/useFlightFilters';
 import { Loader2, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
+
+// Dynamically import PriceGraph to reduce initial bundle size (Recharts is heavy)
+const PriceGraph = dynamic(() => import('./PriceGraph').then(mod => ({ default: mod.PriceGraph })), {
+  loading: () => (
+    <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 h-[400px] flex items-center justify-center">
+      <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+    </div>
+  ),
+  ssr: false
+});
 
 interface FlightResultsProps {
   data: FlightOffersResponse | undefined;

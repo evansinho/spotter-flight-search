@@ -2,10 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { FlightOffersResponse } from '@/types/flight';
+import { FlightOffersResponse, SearchParams } from '@/types/flight';
 import { FlightCard } from './FlightCard';
+import { FlightCardSkeleton } from './FlightCardSkeleton';
 import { FilterPanel } from './FilterPanel';
 import { MobileFilterDrawer } from './MobileFilterDrawer';
+import { ShareSearchButton } from './ShareSearchButton';
 import { useFlightFilters } from '@/hooks/useFlightFilters';
 import { Loader2, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
@@ -24,11 +26,12 @@ interface FlightResultsProps {
   data: FlightOffersResponse | undefined;
   isLoading: boolean;
   error: Error | null;
+  searchParams: SearchParams | null;
 }
 
 type SortOption = 'price-asc' | 'price-desc' | 'duration-asc' | 'duration-desc';
 
-export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
+export function FlightResults({ data, isLoading, error, searchParams }: FlightResultsProps) {
   const [sortBy, setSortBy] = useState<SortOption>('price-asc');
 
   // Use filter hook
@@ -86,11 +89,23 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-4xl mx-auto mt-8">
-        <div className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-          <p className="text-lg text-gray-600">Searching for flights...</p>
-          <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
+      <div className="w-full max-w-7xl mx-auto mt-8 px-3 sm:px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+          {/* Empty space for filters */}
+          <div className="hidden lg:block"></div>
+
+          {/* Skeleton loaders */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+              <p className="text-lg text-gray-600">Searching for flights...</p>
+            </div>
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <FlightCardSkeleton key={i} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -141,7 +156,7 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
         {/* Grid layout: Filters on left, Results on right */}
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
           {/* Filter Panel - Hidden on mobile, visible on desktop */}
-          <div className="hidden lg:block">
+          <aside className="hidden lg:block" aria-label="Flight filters">
             <FilterPanel
               filters={filters}
               defaultFilters={defaultFilters}
@@ -151,18 +166,18 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
               onReset={resetFilters}
               activeFilterCount={activeFilterCount}
             />
-          </div>
+          </aside>
 
           {/* Results Column */}
-          <div>
+          <main>
             {/* Header with results count and sorting */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white" role="status" aria-live="polite">
                   {sortedFlights.length} flight{sortedFlights.length !== 1 ? 's' : ''} found
                 </h2>
                 {sortedFlights.length < data.data.length && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                     Showing filtered results from {data.data.length} total flights
                   </p>
                 )}
@@ -170,7 +185,7 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
 
               {/* Sort dropdown */}
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <label htmlFor="sort" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                <label htmlFor="sort" className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                   Sort:
                 </label>
                 <select
@@ -178,9 +193,9 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
                   className={clsx(
-                    'flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-gray-300 rounded-lg',
+                    'flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg',
                     'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                    'text-sm sm:text-base text-gray-900 font-medium bg-white cursor-pointer',
+                    'text-sm sm:text-base text-gray-900 dark:text-white font-medium bg-white dark:bg-gray-800 cursor-pointer',
                     'transition-all duration-200'
                   )}
                 >
@@ -191,6 +206,13 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
                 </select>
               </div>
             </div>
+
+            {/* Share Search Button */}
+            {searchParams && (
+              <div className="mb-6">
+                <ShareSearchButton searchParams={searchParams} />
+              </div>
+            )}
 
             {/* Price Graph */}
             <div className="mb-6">
@@ -227,7 +249,7 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
                 </button>
               </div>
             )}
-          </div>
+          </main>
         </div>
       </div>
 

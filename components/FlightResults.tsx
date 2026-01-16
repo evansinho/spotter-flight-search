@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react';
 import { FlightOffersResponse, FlightOffer } from '@/types/flight';
 import { FlightCard } from './FlightCard';
 import { PriceGraph } from './PriceGraph';
+import { FilterPanel } from './FilterPanel';
+import { useFlightFilters } from '@/hooks/useFlightFilters';
 import { Loader2, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -18,10 +20,20 @@ type SortOption = 'price-asc' | 'price-desc' | 'duration-asc' | 'duration-desc';
 export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
   const [sortBy, setSortBy] = useState<SortOption>('price-asc');
 
-  const sortedFlights = useMemo(() => {
-    if (!data?.data) return [];
+  // Use filter hook
+  const {
+    filters,
+    filteredFlights,
+    counts,
+    updateFilter,
+    resetFilters,
+    activeFilterCount,
+    defaultFilters,
+  } = useFlightFilters(data?.data || []);
 
-    const flights = [...data.data];
+  // Apply sorting to filtered flights
+  const sortedFlights = useMemo(() => {
+    const flights = [...filteredFlights];
 
     switch (sortBy) {
       case 'price-asc':
@@ -59,7 +71,7 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
       default:
         return flights;
     }
-  }, [data?.data, sortBy]);
+  }, [filteredFlights, sortBy]);
 
   if (isLoading) {
     return (
@@ -113,56 +125,97 @@ export function FlightResults({ data, isLoading, error }: FlightResultsProps) {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto mt-8 px-4">
-      {/* Header with results count and sorting */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {data.data.length} flight{data.data.length !== 1 ? 's' : ''} found
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Choose the best option for your trip
-          </p>
-        </div>
-
-        {/* Sort dropdown */}
-        <div className="flex items-center gap-3">
-          <label htmlFor="sort" className="text-sm font-medium text-gray-700">
-            Sort by:
-          </label>
-          <select
-            id="sort"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className={clsx(
-              'px-4 py-2 border border-gray-300 rounded-lg',
-              'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-              'text-gray-900 font-medium bg-white cursor-pointer',
-              'transition-all duration-200'
-            )}
-          >
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="duration-asc">Duration: Shortest First</option>
-            <option value="duration-desc">Duration: Longest First</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Price Graph */}
-      <div className="mb-6">
-        <PriceGraph flights={sortedFlights} currency={data.data[0]?.price.currency} />
-      </div>
-
-      {/* Flight cards */}
-      <div className="space-y-4">
-        {sortedFlights.map((flight, index) => (
-          <FlightCard
-            key={`${flight.id}-${index}`}
-            flight={flight}
+    <div className="w-full max-w-7xl mx-auto mt-8 px-4">
+      {/* Grid layout: Filters on left, Results on right */}
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+        {/* Filter Panel - Hidden on mobile, visible on desktop */}
+        <div className="hidden lg:block">
+          <FilterPanel
+            filters={filters}
+            defaultFilters={defaultFilters}
+            counts={counts}
             dictionaries={data.dictionaries}
+            onFilterChange={updateFilter}
+            onReset={resetFilters}
+            activeFilterCount={activeFilterCount}
           />
-        ))}
+        </div>
+
+        {/* Results Column */}
+        <div>
+          {/* Header with results count and sorting */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {sortedFlights.length} flight{sortedFlights.length !== 1 ? 's' : ''} found
+              </h2>
+              {sortedFlights.length < data.data.length && (
+                <p className="text-gray-600 mt-1">
+                  Showing filtered results from {data.data.length} total flights
+                </p>
+              )}
+            </div>
+
+            {/* Sort dropdown */}
+            <div className="flex items-center gap-3">
+              <label htmlFor="sort" className="text-sm font-medium text-gray-700">
+                Sort by:
+              </label>
+              <select
+                id="sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className={clsx(
+                  'px-4 py-2 border border-gray-300 rounded-lg',
+                  'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                  'text-gray-900 font-medium bg-white cursor-pointer',
+                  'transition-all duration-200'
+                )}
+              >
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="duration-asc">Duration: Shortest First</option>
+                <option value="duration-desc">Duration: Longest First</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Price Graph */}
+          <div className="mb-6">
+            <PriceGraph flights={sortedFlights} currency={data.data[0]?.price.currency} />
+          </div>
+
+          {/* Flight cards */}
+          {sortedFlights.length > 0 ? (
+            <div className="space-y-4">
+              {sortedFlights.map((flight, index) => (
+                <FlightCard
+                  key={`${flight.id}-${index}`}
+                  flight={flight}
+                  dictionaries={data.dictionaries}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-12 text-center">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No flights match your filters
+              </h3>
+              <p className="text-gray-600 max-w-md mx-auto mb-4">
+                Try adjusting your filter settings to see more results.
+              </p>
+              <button
+                onClick={resetFilters}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Reset Filters
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
